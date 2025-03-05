@@ -3,15 +3,32 @@ import math
 import argparse
 from collections import Counter
 
+# 中文停用词列表
+stop_words = {"的", "了", "在", "是", "我", "有", "和", "就", "不", "人", "都", "一", "一个", "上", "也", "很", "到",
+              "说", "要", "去", "你", "会", "着", "没有", "看", "好", "自己", "这"}
+
+
+# 中文文本预处理函数
+def preprocess(text):
+    # 使用 jieba 进行分词
+    words = jieba.lcut(text)
+    # 去除停用词
+    words = [word for word in words if word not in stop_words]
+    return words
+
 
 # 计算余弦相似度
 def cosine_similarity(text1, text2):
+    # 预处理文本
+    words1 = preprocess(text1)
+    words2 = preprocess(text2)
+
     # 统计词频
-    counter1 = Counter(text1)
-    counter2 = Counter(text2)
+    counter1 = Counter(words1)
+    counter2 = Counter(words2)
 
     # 获取所有唯一的词汇
-    all_words = set(text1).union(set(text2))
+    all_words = set(words1).union(set(words2))
 
     # 将词频转换为向量
     vector1 = [counter1.get(word, 0) for word in all_words]
@@ -36,9 +53,9 @@ def main():
     parser = argparse.ArgumentParser(description="论文查重")
 
     # 添加参数
-    parser.add_argument('file1', default="./orig.txt", help='path to the original file')
-    parser.add_argument('file2', default="./orig_add.txt", help='path to the modified file')
-    parser.add_argument('output_file', default="./res.txt", help='path to the output file')
+    parser.add_argument('file1', type=str, help='path to the original file')
+    parser.add_argument('file2', type=str, help='path to the modified file')
+    parser.add_argument('output_file', type=str, help='path to the output file')
 
     # 解析命令行参数
     args = parser.parse_args()
@@ -48,15 +65,10 @@ def main():
     with open(args.file2, "r", encoding="utf-8") as f2:
         content2 = f2.read()
 
-    list1 = jieba.lcut(content1)
-    list2 = jieba.lcut(content2)
-    print(list1)
-    print(list2)
-
     # 计算并输出相似度
-    similarity = cosine_similarity(list1, list2)
-    print(f"两个文本的余弦相似度: {similarity:.2f}")
-    re = f"这两个文本的相似度为{similarity:.2f}"
+    similarity = cosine_similarity(content1, content2)
+    print(f"两个文本的余弦相似度: {similarity:.6f}")
+    re = f"{args.file1}和{args.file2}的相似度为{similarity:.6f}"
 
     # 将结果输进答案文件
     with open(args.output_file, "w", encoding="utf-8") as f3:
