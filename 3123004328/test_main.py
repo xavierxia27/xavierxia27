@@ -1,7 +1,7 @@
 import unittest
 
 # 导入待测试的函数
-from main import cosine_similarity  # 替换为你的脚本文件名
+from main import cosine_similarity  
 
 
 class TestCosineSimilarity(unittest.TestCase):
